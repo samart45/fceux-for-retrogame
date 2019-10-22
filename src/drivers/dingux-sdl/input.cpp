@@ -296,10 +296,9 @@ static void KeyboardCommands() {
 		FCEUI_SetRenderPlanes(true, state);
 	}
 
-	// L (SDLK_TAB), Start+Select or Power flick (SDLK_HOME) - enter GUI
-	if (_keyonly(DINGOO_L)
-	 || MenuRequested
-	 || (ispressed(DINGOO_START) && ispressed(DINGOO_SELECT))) {
+	// Power flick (SDLK_HOME) to enter GUI
+	if (_keyonly(DINGOO_L2)
+        || MenuRequested) {
 		SilenceSound(1);
 		MenuRequested = false;
 		FCEUGUI_Run();
@@ -324,8 +323,9 @@ static void KeyboardCommands() {
 		}
 		if(_keyonly(DINGOO_X)) { // R + X  toggle fullscreen
 			extern int s_fullscreen; // from dingoo_video.cpp
-			s_fullscreen = (s_fullscreen + 1) % 4;
+			s_fullscreen = (s_fullscreen + 1) % 5;
 			g_config->setOption("SDL.Fullscreen", s_fullscreen);
+			FCEUD_DriverReset();
 			dingoo_clear_video();
 			resetkey(DINGOO_X);
 		}

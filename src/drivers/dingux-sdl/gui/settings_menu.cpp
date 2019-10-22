@@ -115,10 +115,6 @@ int RunSettingsMenu() {
 		FCEUGUI_Flip();
 	}
 
-	// Must update emulation core and drivers
-	UpdateEMUCore(g_config);
-	FCEUD_DriverReset();
-
 	// Clear screen
 	dingoo_clear_video();
 

@@ -318,10 +318,14 @@ void FCEUGUI_Kill() {
 	KillFont();
 }
 
+extern void InitGuiVideo();
+
 void FCEUGUI_Run() {
 	static int index = 0;
 	static int spy = 72;
 	int done = 0, y, i;
+
+    InitGuiVideo();
 
 	load_preview();
 
@@ -444,6 +448,10 @@ void FCEUGUI_Run() {
 	}
 
 	g_psdl = FCEUD_GetPaletteArray16();
+
+	// Must update emulation core and drivers
+	UpdateEMUCore(g_config);
+	FCEUD_DriverReset();
 
 	// Clear screen
 	dingoo_clear_video();

@@ -103,6 +103,7 @@ int KillVideo() {
 
 	SDL_FreeSurface(nes_screen);
 	s_inited = 0;
+	s_VideoModeSet = false;
 	return 0;
 }
 
@@ -157,26 +158,16 @@ int InitVideo(FCEUGI *gi) {
 
 	// initialize dingoo video mode
 	if (!s_VideoModeSet) {
-		uint32 vm = 0; // 0 - 320x240, 1 - 400x240, 2 - 480x272
-
-		#define NUMOFVIDEOMODES 3
-		struct {
-			uint32 x;
-			uint32 y;
-		} VModes[NUMOFVIDEOMODES] = {
-			{320, 240},
-			{400, 240},
-			{480, 272}
-		};
-
-		for(vm = NUMOFVIDEOMODES-1; vm >= 0; vm--)
+		int w, h;
+		if (s_fullscreen == 1) {
+			w = 256; h = PAL ? 240 : 224;
+		} else {
+			w = 320; h = 240;
+		}
+		if(SDL_VideoModeOK(w, h, 16, SDL_HWSURFACE | DINGOO_MULTIBUF) != 0)
 		{
-			if(SDL_VideoModeOK(VModes[vm].x, VModes[vm].y, 16, SDL_HWSURFACE | DINGOO_MULTIBUF) != 0)
-			{
-				screen = SDL_SetVideoMode(VModes[vm].x, VModes[vm].y, 16, SDL_HWSURFACE | DINGOO_MULTIBUF);
-				s_VideoModeSet = true;
-				break;
-			}
+			screen = SDL_SetVideoMode(w, h, 16, SDL_HWSURFACE | DINGOO_MULTIBUF);
+			s_VideoModeSet = true;
 		}
 	}
 
@@ -194,6 +185,14 @@ int InitVideo(FCEUGI *gi) {
 	dingoo_clear_video();
 
 	return 0;
+}
+
+void InitGuiVideo() {
+	if (screen->w == 320 && screen->h == 240) return;
+	if(SDL_VideoModeOK(320, 240, 16, SDL_HWSURFACE | DINGOO_MULTIBUF) != 0)
+	{
+		screen = SDL_SetVideoMode(320, 240, 16, SDL_HWSURFACE | DINGOO_MULTIBUF);
+	}
 }
 
 /**
@@ -330,19 +329,19 @@ void BlitScreen(uint8 *XBuf) {
 
 	register uint8 *pBuf = XBuf;
 
-	if(s_fullscreen == 3) { // fullscreen smooth
+	if(s_fullscreen == 4) { // fullscreen smooth
 		if (s_clipSides) {
 			upscale_320x240_bilinearish_clip((uint32 *)screen->pixels, (uint8 *)XBuf + 256 * 8, 256);
 		} else {
 			upscale_320x240_bilinearish_noclip((uint32 *)screen->pixels, (uint8 *)XBuf + 256 * 8, 256);
 		}
-	} else if(s_fullscreen == 2) { // fullscreen
+	} else if(s_fullscreen == 3) { // fullscreen
 		switch(screen->w) {
 			case 480: upscale_480x272((uint32 *)screen->pixels, (uint8 *)XBuf + 256 * 8); break;
 			case 400: upscale_384x240((uint32 *)screen->pixels, (uint8 *)XBuf + 256 * 8); break;
 			case 320: upscale_320x240((uint32 *)screen->pixels, (uint8 *)XBuf + 256 * 8); break;
 		}
-	} else if(s_fullscreen == 1) { // aspect fullscreen
+	} else if(s_fullscreen == 2) { // aspect fullscreen
 		switch(screen->w) {
 			case 480: upscale_384x272((uint32 *)screen->pixels, (uint8 *)XBuf + 256 * 8); break;
 			case 400:
@@ -373,6 +372,7 @@ void BlitScreen(uint8 *XBuf) {
 	} else { // native res
 		//int pinc = (320 - NWIDTH) >> 1;
 		int32 pinc = (screen->w - NWIDTH) >> 1;
+		int32 append = 256 - NWIDTH;
 
 		//SDL_Rect dstrect;
 
@@ -390,7 +390,7 @@ void BlitScreen(uint8 *XBuf) {
 		//dest += (s_srendline * 320) + pinc >> 1;
 		dest += (screen->w/2 * s_srendline) + pinc / 2 + ((screen->h - 240) / 4) * screen->w;
 
-		for (y = s_tlines; y; y--, pBuf += 256 - NWIDTH) {
+		for (y = s_tlines; y; y--, pBuf += append) {
 			for (x = NWIDTH >> 3; x; x--) {
 				__builtin_prefetch(dest + 4, 1);
 				*dest++ = palettetranslate[*(uint16 *) pBuf];
