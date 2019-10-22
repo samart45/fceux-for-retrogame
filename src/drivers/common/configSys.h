@@ -34,6 +34,11 @@ public:
     ~Config() { }
 
     /**
+     * Reloads configuration file with given filename
+     */
+    int reload(const std::string &);
+
+    /**
      * Adds a configuration option.  All options must be added before
      * parse().
      */
@@ -89,6 +94,11 @@ public:
      * configuration file.
      */
     int save();
+
+    /**
+     * Like save with given filename
+     */
+    int save(const std::string &);
 };
 
 #endif // !__CONFIGSYS_H
