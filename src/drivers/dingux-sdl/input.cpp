@@ -62,6 +62,18 @@ static bool MenuRequested = false;
 
 static int frameAdvanceKey = 0;
 
+static unsigned short analog1 = 0;
+
+#define joy_commit_range    3276
+enum
+{
+	ANALOG_UP = 1,
+	ANALOG_DOWN = 2,
+	ANALOG_LEFT = 4,
+	ANALOG_RIGHT = 8
+};
+
+
 /**
  * Necessary for proper GUI functioning (configuring when a game isn't loaded).
  */
@@ -300,9 +312,10 @@ static void KeyboardCommands() {
 	if (_keyonly(DINGOO_L2)
         || MenuRequested) {
 		SilenceSound(1);
-		MenuRequested = false;
 		FCEUGUI_Run();
 		SilenceSound(0);
+		analog1 = 0;
+		MenuRequested = false;
 		return;
 	}
 
@@ -657,6 +670,35 @@ static void UpdatePhysicalInput()
                 // Keep a record of it.
                 MenuRequested = true;
             break;
+		case SDL_JOYAXISMOTION:
+        {
+            int axisval = event.jaxis.value;
+            if (event.jaxis.axis == 0)
+            {// X axis
+                analog1 &= ~(ANALOG_LEFT | ANALOG_RIGHT);
+                if (axisval > joy_commit_range)
+                {
+                    analog1 |= ANALOG_RIGHT;
+                }
+                else if (axisval < -joy_commit_range)
+                {
+                    analog1 |= ANALOG_LEFT;
+                }
+            }
+            else if (event.jaxis.axis == 1)
+            {// Y axis
+                analog1 &= ~(ANALOG_UP | ANALOG_DOWN);
+                if (axisval > joy_commit_range)
+                {
+                    analog1 |= ANALOG_DOWN;
+                }
+                else if (axisval < -joy_commit_range)
+                {
+                    analog1 |= ANALOG_UP;
+                }
+            }
+            break;
+        }
         default:
             // do nothing
             break;
@@ -727,6 +769,7 @@ static void UpdateGamepad(void) {
 	int x;
 	int wg;
 	int merge;
+	int use_analog;
 
 	rapid ^= 1;
 
@@ -757,6 +800,16 @@ static void UpdateGamepad(void) {
 				}
 			}
 		}
+	}
+
+	// add analog direction
+	g_config->getOption("SDL.AnalogStick", &use_analog);
+	if (use_analog)
+	{
+		if (analog1 & ANALOG_UP) JS |= (1 << 4);
+		if (analog1 & ANALOG_DOWN) JS |= (1 << 5);
+		if (analog1 & ANALOG_LEFT) JS |= (1 << 6);
+		if (analog1 & ANALOG_RIGHT) JS |= (1 << 7);
 	}
 
 	//  for(x=0;x<32;x+=8) {	/* Now, test to see if anything weird(up+down at same time)
