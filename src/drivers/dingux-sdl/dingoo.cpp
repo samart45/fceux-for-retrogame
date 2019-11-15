@@ -233,6 +233,9 @@ int LoadGame(const char *path) {
 	g_config->getOption("SDL.ShowFPS", &showfps);
 	g_config->getOption("SDL.FPSThrottle", &fpsthrottle);
 
+	// Update configs for input system
+	UpdateInputConfig(g_config);
+
 	isloaded = 1;
 
 	FCEUD_NetworkConnect();

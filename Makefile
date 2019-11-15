@@ -231,10 +231,9 @@ W_OPTS= -Wno-write-strings -Wno-sign-compare
 
 F_OPTS = -fomit-frame-pointer -fno-builtin -fno-common -fpermissive
 
-OPTIMIZE =  -O4 -fexpensive-optimizations -mips32r2 -fomit-frame-pointer -fno-builtin   \
+OPTIMIZE =  -O3 -mips32r2 -fomit-frame-pointer -fno-builtin   \
             -fno-common -Wno-write-strings -Wno-sign-compare -ffast-math -ftree-vectorize \
-			-funswitch-loops -fno-strict-aliasing -flto
-
+			-funswitch-loops -fno-strict-aliasing
 
 CC_OPTS	= $(F_OPTS) $(W_OPTS) $(OPTIMIZE)
 

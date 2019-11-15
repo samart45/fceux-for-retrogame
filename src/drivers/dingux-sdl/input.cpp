@@ -64,6 +64,8 @@ static int frameAdvanceKey = 0;
 
 static unsigned short analog1 = 0;
 
+static int merge_controls = 0, use_analog = 0, autofire_pattern = 0;
+
 #define joy_commit_range    3276
 enum
 {
@@ -768,12 +770,17 @@ static void UpdateGamepad(void) {
 	uint32 JS = 0;
 	int x;
 	int wg;
-	int merge;
-	int use_analog;
 
-	rapid ^= 1;
+	/* rapid-fire modes:
+	 *  0: on/off/on/off
+	 *  1: on/on/off/off
+	 *  2: on/off/off/off
+	 */
+	const bool autofire_patterns[3][4] = {
+		{0, 1, 0, 1}, {0, 0, 1, 1}, {0, 0, 0, 1}
+	};
 
-	g_config->getOption("SDL.MergeControls", &merge);
+	rapid = (rapid + 1) & 3;
 
 	// go through just one device for the little dingoo :)
 	for (wg = 0; wg < 1; wg++) {
@@ -782,19 +789,19 @@ static void UpdateGamepad(void) {
 			if (DTestButton(&GamePadConfig[wg][x])) {
 				JS |= (1 << x) << (wg << 3);
 				// Inject gamepad 1 input into gamepad 2 if enabled
-				if (merge) {
+				if (merge_controls) {
 					JS |= (1 << x) << ((wg + 1) << 3);
 				}
 			}
 		}
 
 		// rapid-fire a, rapid-fire b
-		if (rapid) {
+		if (autofire_patterns[autofire_pattern][rapid]) {
 			for (x = 0; x < 2; x++) {
 				if (DTestButton(&GamePadConfig[wg][8 + x])) {
 					JS |= (1 << x) << (wg << 3);
 					// Inject gamepad 1 input into gamepad 2 if enabled
-					if (merge) {
+					if (merge_controls) {
 						JS |= (1 << x) << ((wg + 1) << 3);
 					}
 				}
@@ -803,7 +810,6 @@ static void UpdateGamepad(void) {
 	}
 
 	// add analog direction
-	g_config->getOption("SDL.AnalogStick", &use_analog);
 	if (use_analog)
 	{
 		if (analog1 & ANALOG_UP) JS |= (1 << 4);
@@ -1203,6 +1209,7 @@ void UpdateInput(Config *config) {
 	char buf[64];
 	std::string device, prefix;
 
+	UpdateInputConfig(config);
 	for (unsigned int i = 0; i < 3; i++) {
 		snprintf(buf, 64, "SDL.Input.%d", i);
 		config->getOption(buf, &device);
@@ -1439,6 +1446,13 @@ void UpdateInput(Config *config) {
 	}
 #endif
 }
+
+void UpdateInputConfig(Config *config) {
+	config->getOption("SDL.MergeControls", &merge_controls);
+	config->getOption("SDL.AnalogStick", &use_analog);
+	config->getOption("SDL.AutoFirePattern", &autofire_pattern);
+}
+
 // Definitions from main.h:
 // GamePad defaults
 const char *GamePadNames[GAMEPAD_NUM_BUTTONS] = 

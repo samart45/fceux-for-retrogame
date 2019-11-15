@@ -190,6 +190,7 @@ Config * InitConfig() {
 	config->addOption("input4", "SDL.Input.3", "Gamepad.3");
 	config->addOption("mergecontrols", "SDL.MergeControls", 0);
 	config->addOption("analogstick", "SDL.AnalogStick", 0);
+	config->addOption("autofirepattern", "SDL.AutoFirePattern", 0);
 
 	// allow for input configuration
 	// NOT SUPPORTED
