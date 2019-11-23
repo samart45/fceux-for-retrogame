@@ -227,7 +227,7 @@ int RunControlSettings()
 				g_config->getOption(cm_menu[i].option, &iBtnVal);
 				
 				if (i == CONTROL_MENUSIZE-1)
-					sprintf(cBtn, "%s", "");
+					cBtn[0] = 0;
 				else if (i == CONTROL_MENUSIZE-2)
 				{
 					int value;

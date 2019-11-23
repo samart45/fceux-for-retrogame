@@ -255,14 +255,20 @@ LIBS = $(SDL_LIBS) -lz -lm
 TARGET = fceux
 
 all: $(TARGET)
-	mipsel-linux-strip bin/$(TARGET)
+
+opk: $(TARGET).opk
+
+$(TARGET).opk: $(TARGET)
+	@echo Creating $@...
+	@mipsel-linux-strip bin/$(TARGET)
+	@mksquashfs $(TARGET) src/drivers/dingux-sdl/gui/*.bmp opk/fceux.png opk/default.gcw0.desktop $@ -all-root -no-xattrs -noappend -no-exports
 
 $(TARGET): $(OBJS)
 	@mkdir -p bin/
 	@cp src/drivers/dingux-sdl/gui/*.bmp bin/
 	@echo Linking $@...
-	@echo $(LD) $(LDFLAGS) $(OBJS) -o bin/$@
-	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o bin/$@
+	@echo $(LD) $(LDFLAGS) $(OBJS) -o $@
+	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
 
 %.o: %.c
 	@echo Compiling $<...
