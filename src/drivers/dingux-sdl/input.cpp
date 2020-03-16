@@ -295,7 +295,7 @@ static void KeyboardCommands() {
 	}
 
 	// Power flick (SDLK_HOME) to enter GUI
-	if (_keyonly(DINGOO_L2)
+	if (_keyonly(DINGOO_MENU)
 		|| MenuRequested) {
 		SilenceSound(1);
 		FCEUGUI_Run();
