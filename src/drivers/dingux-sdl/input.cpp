@@ -294,8 +294,14 @@ static void KeyboardCommands() {
 		FCEUI_SetRenderPlanes(true, state);
 	}
 
-	// Power flick (SDLK_HOME) to enter GUI
+
+#ifdef PG2
+	// Power flick (SDLK_RCTRL) to enter GUI
 	if (_keyonly(DINGOO_MENU)
+#else
+	// Power flick (SDLK_HOME) to enter GUI
+	if (_keyonly(DINGOO_L2)
+#endif
 		|| MenuRequested) {
 		SilenceSound(1);
 		FCEUGUI_Run();
